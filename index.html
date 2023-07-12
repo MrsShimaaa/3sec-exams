@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Exam</title>
+  <style>
+    .correct {
+      color: green;
+    }
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .container {
+        width: 600px;
+        margin: 10px auto;
+    }
+
+    .container input,
+    .container button {
+      margin: 10px;
+      font-size: 24px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .result {
+        text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Exam</h1>
+
+    <form id="examForm">
+      <label for="studentName">Student Name:</label>
+      <input type="text" id="studentName" name="studentName"><br><br>
+
+      <h3>Questions:</h3>
+      <div id="questions"></div><br>
+
+      <div class="result">
+        <strong>Results:</strong><br>
+        Correct Answers: <span id="correctCount">0</span><br>
+        Incorrect Answers: <span id="incorrectCount">0</span>
+      </div>
+
+      <button type="button" onclick="submitExam()">Submit</button><br><br>
+    </form>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "He .. playing soccer",
+        choices: ["is", "do", "deos", "were"],
+        answer: 0,
+        answered: false
+      },
+      {
+        question: "I am ... to play soccer",
+        choices: ["could", "can", "must", "able"],
+        answer: 3,
+        answered: false
+      },
+      // Add more questions here...
+    ];
+    
+    const questionsContainer = document.getElementById("questions");
+    questions.forEach((q, index) => {
+      const questionElement = document.createElement("div");
+      questionElement.innerHTML = `
+        <p>${index + 1}. ${q.question}</p>
+        ${q.choices.map((choice, choiceIndex) => `
+          <label>
+            <input type="radio" name="question${index}" value="${choiceIndex}" onclick="updateAnswered(${index})">
+            ${choice}
+          </label><br>
+        `).join("")}
+        <br>
+      `;
+      questionsContainer.appendChild(questionElement);
+    });
+
+    function updateAnswered(questionIndex) {
+      questions[questionIndex].answered = true;
+    }
+    
+    function submitExam() {
+      const studentName = document.getElementById("studentName").value;
+      
+      if (!studentName) {
+        alert("Please enter your name.");
+        return;
+      }
+
+      const allAnswered = questions.every(question => question.answered);
+      if (!allAnswered) {
+        alert("Please answer all questions.");
+        return;
+      }
+      
+      const correctCountElement = document.getElementById("correctCount");
+      const incorrectCountElement = document.getElementById("incorrectCount");
+      let correctCount = 0;
+      let incorrectCount = 0;
+      
+      questions.forEach((q, index) => {
+        const selectedAnswer = document.querySelector(`input[name="question${index}"]:checked`);
+        
+        if (selectedAnswer) {
+          const selectedChoice = parseInt(selectedAnswer.value);
+          if (selectedChoice === q.answer) {
+            selectedAnswer.parentNode.classList.add("correct");
+            correctCount++;
+          } else {
+            selectedAnswer.parentNode.classList.remove("correct");
+            incorrectCount++;
+          }
+        }
+        
+        const correctAnswerElement = document.querySelector(`input[name="question${index}"][value="${q.answer}"]`);
+        correctAnswerElement.parentNode.classList.add("correct");
+      });
+      
+      correctCountElement.textContent = correctCount;
+      incorrectCountElement.textContent = incorrectCount;
+      
+     
+        const formData = new FormData(document.getElementById("examForm"));
+        formData.append("correctCount", correctCount);
+        formData.append("incorrectCount", incorrectCount);
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://formspree.io/f/xjvqvjlw");
+        xhr.send(formData);
+      
+    }
+  </script>
+</body>
+</html>
